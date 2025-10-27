@@ -1,0 +1,28 @@
+{
+    "language": "en",
+    "words": [
+        "bitfield",
+        "bitfields"
+    ],
+    "languageSettings": [
+        {
+            "languageId": "cpp,c,rc-script,objective-c,objective-cpp",
+            "allowCompoundWords": true,
+            "ignoreRegExpList": [
+                "/#include.*/",
+                "/#pragma.*/",
+                "/#define.*/",
+                "/#if.*def.*/",
+                "/#endif .*/"
+            ]
+        }
+    ],
+    "ignorePaths": ["**/*.cmake", "**/CMakeLists.txt"],
+    "flagWords": [],
+    "ignoreWords": [
+        "Gridshadows",
+        "Gridshadow",
+        "zlib",
+        "godot"
+    ]
+}
