@@ -1,6 +1,6 @@
 # GDExtension Export
 
-Clang plugin for auto-generating the export interface for a Godot GDExtension from C++ attributes.
+Clang plugin for auto-generating the export interface for a Godot GDExtension from <nobr>C++</nobr> attributes.
 
   * [Motivation](#motivation)
     * [Currently Implemented](#currently-implemented)
@@ -9,7 +9,7 @@ Clang plugin for auto-generating the export interface for a Godot GDExtension fr
     * [Requirements](#requirements)
     * [Building](#building)
   * [Usage](#usage)
-    * [C++ Attributes](#adding-attributes-to-the-c-classes-and-methods)
+    * [<nobr>C++</nobr> Attributes](#adding-attributes-to-the-c-classes-and-methods)
       * [Classes](#class)
       * [Enums, Bitfields, & Constants](#enum-bitfield-and-constants)
       * [Members](#members)
@@ -23,23 +23,25 @@ Clang plugin for auto-generating the export interface for a Godot GDExtension fr
 
 ## Motivation
 
-When writing a GDExtension in C++, see
+When writing a GDExtension in <nobr>C++</nobr>, see
 [Godot Tutorial](https://docs.godotengine.org/en/stable/tutorials/scripting/cpp/gdextension_cpp_example.html),
 it is necessary to write boilerplate code to export the classes, members, methods, and signals. As
-most of this is purely repeating the C++ signatures, it should be possible to auto-generate most of
-this. Since C++17, [attributes](https://en.cppreference.com/w/cpp/language/attributes.html) from
-unknown namespaces should be ignored by compilers, and therefore, it should be possible to use
+most of this is purely repeating the <nobr>C++</nobr> signatures, it should be possible to auto-generate most of
+this. Since <nobr>C++17</nobr>, [attributes](https://en.cppreference.com/w/cpp/language/attributes.html) from
+unknown namespaces should be ignored by compilers, and therefore, it should be possible to 
 write a tool which parses custom attributes (with the `godot` namespace) to automatically generate
 the code.
 
-Rather than write a complete parser for C++ to handle the attributes, the idea was to use clang to
+Rather than write a complete parser for <nobr>C++</nobr> to handle the attributes, the idea was to use clang to
 generate the [Abstract Syntax Tree (AST)](https://clang.llvm.org/docs/IntroductionToTheClangAST.html);
 notably, using the [Clang Python Bindings](https://libclang.readthedocs.io/en/latest/) to integrate
 into the extension's SCons build. However, this doesn't expose the unknown, custom attributes. In
 order to make clang support custom attributes its necessary to do one of two things:
-  - Custom a few source files of clang and build a custom executable
+
+  - Customise a few source files of clang and build a custom clang executable
   - Write a [Clang plugin](https://clang.llvm.org/docs/ClangPlugins.html) to handle the custom
     attributes.
+
 Using the second option was best, and now the custom tool could be integrated into the plugin.
 This however, now means that a clang executable is required (rather than just the python bindings
 and the underlying library), and the execution is fairly complicated. Therefore, a python wrapper
@@ -53,7 +55,7 @@ and the underlying library), and the execution is fairly complicated. Therefore,
   * Static methods
   * Enums, bitfields, and constants in a class
   * Generation of [XML comments](https://docs.godotengine.org/en/stable/tutorials/scripting/cpp/gdextension_docs_system.html)
-    from [Doxygen-style](https://www.doxygen.nl/manual/docblocks.html) comments in the C++ code.
+    from [Doxygen-style](https://www.doxygen.nl/manual/docblocks.html) comments in the <nobr>C++</nobr> code.
 
 ### Issues and TODO
 
@@ -64,7 +66,7 @@ and the underlying library), and the execution is fairly complicated. Therefore,
   * Add better support for property/argument type hinting, notably for methods/signals, and
     automatically deducing type hints in some cases (such as enums values)
   * Add support for virtual (can be overridden by GDScript) and override (override method in GDScript).
-    Maybe can be deduced by the `virtual` and `overload` keywords on C++ functions; however, virtual
+    Maybe can be deduced by the `virtual` and `overload` keywords on <nobr>C++</nobr> functions; however, virtual
     methods are generally defined by `GDVIRTUAL*` macros, which means an attribute cannot be attached
     to the function (as the function definition is NOT the first thing defined in the macro) &mdash; would
     have to reimplement this (maybe that is possible, could generate the helper function code).
@@ -85,7 +87,7 @@ is only tested and likely to work on Linux (Apple Clang may not support plugins)
 
 ### Building
 
-Using Cmake the compilation of the tool requires only two steps ran from the root of the `gdexport`
+Using CMake the compilation of the tool requires only two steps ran from the root of the `gdexport`
 folder:
 
 1.  **Configure the build system**:
@@ -100,7 +102,7 @@ folder:
         `/path/to/clang` is replaced with the path to the `clang++` executable.
       * `-DGDEXPORT_GODOT_CPP=/path/to/godot-cpp` &mdash; Specifies the path to `godot-cpp`
         git repository checkout, where `/path/to/godot-cpp` is replaced with the path to the
-        folder containing `godot-cpp`.
+        folder containing `godot-cpp`. **This *should* be specified**
 
 2.  **Build the clang plugin**:
     ```sh
@@ -111,15 +113,15 @@ folder:
 
 In order to automatically generate the interface for exported classes in a GDExtension the following
 steps are necessary:
-  * [Add attributes to the C++ classes and methods](#adding-attributes-to-the-c-classes-and-methods)
+  * [Add attributes to the <nobr>C++</nobr> classes and methods](#adding-attributes-to-the-c-classes-and-methods)
   * *Optionally* [Add Doxygen-style comments for automatic documentation generation](#documentation-comments-support)
-  * [Generate C++ source files for the interface](#generating-the-interface)
-  * Include the generated C++ files (and documentation XML) in the GDExtension 
+  * [Generate <nobr>C++</nobr> source files for the interface](#generating-the-interface)
+  * Include the generated <nobr>C++</nobr> files (and documentation XML) in the GDExtension 
 
-### Adding Attributes to the C++ Classes and Methods
+### Adding Attributes to the <nobr>C++</nobr> Classes and Methods
 
-Support auto-generation of the interface is supported by adding
-[C++11](https://en.cppreference.com/w/cpp/language/attributes.html)-,
+Auto-generation of the interface is supported by adding
+[<nobr>C++11</nobr>](https://en.cppreference.com/w/cpp/language/attributes.html)-,
 [C23](https://en.cppreference.com/w/c/language/attributes.html)-, or
 [GCC](https://gcc.gnu.org/onlinedocs/gcc/Attributes.html)-style attributes
 of the form
@@ -129,7 +131,7 @@ of the form
 __attribute__((godot_name(args)))
 ```
 to a class, enum, or function, where `name` is the name of the attribute and
-`(args)` specifies optional arguments. Since C++17 compilers are meant to
+`(args)` specifies optional arguments. <nobr>C++17</nobr> compilers are meant to
 ignore unknown attributes/unknown namespace; therefore, this shouldn't cause
 a compile error when compiling the GDExtensions. However, on some compilers
 warnings may be generated for unknown attributes. Most compilers have options
@@ -154,7 +156,7 @@ In the following documentation we only use the *namespace prefixed* form.
 
 Arguments must be compiler-time literals. The attributes used can take one or
 more of the following types:
-  - String literal &mdash; must be a C++ string literal of form `"literal"` (or macro
+  - String literal &mdash; must be a <nobr>C++</nobr> string literal of form `"literal"` (or macro
     that expands to this)
   - An enum literal &mdash; which must be specified as the enum literal of form
     `namespace::ENUM_VALUE_NAME`, or an integer literal
@@ -175,7 +177,7 @@ An attribute is attached to a `class` or `struct` to export a class
 > class [[godot::class]] ClassName
 > ```
 
-#### Enum, Bitfield, and constants
+#### Enum, Bitfield, and Constants
 
 One of the following attributes is attached to an `enum`, which must be within
 an exported class, to export constants.
@@ -203,10 +205,9 @@ an exported class, to export constants.
 
 #### Members
 
-Members (properties) must have a getter method, and optional a setter method set. A
-instance function *declaration* within an exported class, can be set as getter
-or setter with attributes. A method can only be set as either a getter or setter.
-In general, these methods should be public.
+Members (properties) must have a getter method, and optional a setter method set, which are
+instance function *declaration* within an exported class marked with attributes. A method
+can only be set as either a getter or setter. In general, these methods should be public.
 
 > **`godot::getter`** &mdash; Specifies that the function `get_name` is exported
 > as the getter for the property `name` with type `Type`. 
@@ -242,16 +243,16 @@ In general, these methods should be public.
 >     from the front of the function name.
 >   - A `godot::Variant` value denoting the type of the property (optional, but
 >     required if the next property is specified). If not specified, type is
->     attempted to be deduced from `Type`, which must be a C++ built-in
->     (`bool`, integer, `float`, `double`), an enum type, a basic Godot type
+>     attempted to be deduced from `Type`, which must be a <nobr>C++</nobr> built-in
+>     (`bool`, any integer type, `float`, `double`), an enum type, a basic Godot type
 >     in the `godot` namespace (String, Vector, Array, Dictionary, Object etc.),
 >     a class which inherits from a Godot type, or a typedef to any of these
 >   - A bitfield of `godot::PropertyUsageFlags` values denoting the usage for
 >     the property (optional). If not specified, defaults to
->     ``godot::PROPERTY_USAGE_DEFAULT`
+>     `godot::PROPERTY_USAGE_DEFAULT`
 
-> **`godot::setter`** &mdash; Specifies that the function `get_name` is exported
-> as the getter for the property `name` with type `Type`.
+> **`godot::setter`** &mdash; Specifies that the function `set_name` is exported
+> as the setter for the property `name` with type `Type`.
 >
 > ```cpp
 > [[godot::setter]]
@@ -288,10 +289,10 @@ In general, these methods should be public.
 >   - A string literal for the property hint (optional). If not specified,
 >     defaults to the empty string
 
-> **Warning**
+> [!WARNING]
 >
 > If using [Member Groups/Subgroups](#member-groupssubgroups), both the getter and setter MUST be
-> specified within the same group; e.g., the `[[godot::group]]` for the memebers group must come
+> specified within the same group; e.g., the `[[godot::group]]` for the members group must come
 > before *BOTH* getter and setter and the `[[godot::group]]` for the next group must come after
 > *BOTH* getter and setter (and the same for `[[godot::subgroup]]`)
 
@@ -354,7 +355,7 @@ In general, this method should be private or protected.
 >  The argument names **MUST** be specified in order
 > for valid code to be created. Additionally, this method **MUST NOT** be
 > defined (no function body), as one will be automatically generated.
-> class. This method can be called to emit the signal (the generated
+> This method can be called to emit the signal (the generated
 > definition forwards to the `emit_signal` function). A signal can have a `void`
 > return or a return of type `godot::Error`. In the later case the return value
 > from `emit_signal` is returned, while in the former it is discarded.
@@ -390,7 +391,7 @@ attribute.
 > See [Grouping exports](https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_exports.html)
 > in the GDScript documentation.
 
-> **Warning**
+> [!WARNING]
 >
 > For [Members](#members), both the getter and setter MUST be specified within the same group; e.g.,
 > the `[[godot::group]]` for the members group must come before *BOTH* getter and setter and the
@@ -404,7 +405,7 @@ classes, enums, methods, signals, and property getters or setters (preferring
 getter over setter) can be automatically exported into the XML format expected
 for [Godot documentation](https://docs.godotengine.org/en/stable/tutorials/scripting/cpp/gdextension_docs_system.html).
 
-> **Warning**
+> [!IMPORTANT]
 >
 > It appears that clang only supports Javadoc-style comments of the form
 > ```cpp
@@ -457,7 +458,9 @@ differences to Doxygen and Godot comment formats:
       Starts paragraph to display copyright information
     - [`deprecated`](https://www.doxygen.nl/manual/commands.html#cmddeprecated) &mdash;
       Marks as deprecated and adds optional paragraph describing why.
-      *Warning:* This tag is slightly different to the GDScript version
+      > [!ATTENTION]
+      > 
+      > This tag is slightly different to the GDScript version
     - [`e`](https://www.doxygen.nl/manual/commands.html#cmde)
       / [`em`](https://www.doxygen.nl/manual/commands.html#cmdem) &mdash;
       Displays next word in italic; i.e., emphasise the text
@@ -487,7 +490,7 @@ differences to Doxygen and Godot comment formats:
     - [`retval`](https://www.doxygen.nl/manual/commands.html#cmdresult) &mdash;
       Starts paragraph to describe a possible return value for a method
     - [`since`](https://www.doxygen.nl/manual/commands.html#cmdsince) &mdash;
-      Starts paragraph to state *since* the method was available
+      Starts paragraph to state *since when* the method was available
     - [`todo`](https://www.doxygen.nl/manual/commands.html#cmdtodo) &mdash;
       Starts paragraph to list a todo
     - [`verbatim`](https://www.doxygen.nl/manual/commands.html#verbatim)
@@ -505,13 +508,15 @@ differences to Doxygen and Godot comment formats:
       `ref signal:Class.name`, `ref theme_item:Class.name` &mdash; Link to the
       specified annotation, constant, enum, member, method, constructor, signal,
       or theme_item; equivalent to `[annotation Class.name]` etc.
-      *Warning*: There must be *NO* whitespace in the command (except the
-      required space after `ref`)
+      > [!ATTENTION]
+      > 
+      > There must be *NO* whitespace in the command (except the required space after `ref`)
     - `ref operator:Class.op` &mdash; Link to the operator, where `op` is the 
       operator *without* the `operator` prefix; e.g, `\ref operator:Color.+=`.
       Equivalent to `[operator Class.operator op]`
-      *Warning*: There must be *NO* whitespace in the command (except the
-      required space after `ref`)
+      > [!ATTENTION]
+      > 
+      > There must be *NO* whitespace in the command (except the required space after `ref`)
   * The following extra Doxygen-style commands are supported
     (using `@` or `\`) similar to the corresponding GDScript tags:
     - `tutorial url [title]` &mdash; Adds the link to a tutorial, with optional title
@@ -575,14 +580,14 @@ or `\verbatim`/`@verbatim` Doxygen blocks can be used instead:
 
 ### Generating the Interface
 
-Generating the C++ source files to include can be done in three different ways:
+Generating the <nobr>C++</nobr> source files to include can be done in three different ways:
   * [Via a python script on the command line](#python-script)
   * [Calling a function in a python package](#python-package)
   * [During the SCons build of the extension](#scons)
 
 #### Python Script
 
-The python script `gdexport.py` can be used to generate the required C++ source files. The basic
+The python script `gdexport.py` can be used to generate the required <nobr>C++</nobr> source files. The basic
 usage is
 
 ```sh
@@ -592,11 +597,11 @@ python gdexport.py --godot <godot-cpp> <ext-name> <file> [<file>...]
 where `<godot-cpp>` is the (relative) path to the checkout of the 
 [`godot-cpp` Git repository](https://github.com/godotengine/godot-cpp),
 `<ext-name>` is a name to use to generate the entry point to the extension (`<ext-name>_library_init`),
-which must b a valid C++-style identifier (containing only numbers, letters, or `_`, and not
-starting with a number), and `<file>` is one or more C++ header files to parse to extract the
+which must be a valid <nobr>C++</nobr>-style identifier (containing only numbers, letters, or `_`, and not
+starting with a number), and `<file>` is one or more <nobr>C++</nobr> header files to parse to extract the
 interface from.
 
-For each `<file>` specified a C++ file with the name `<filename>.gen.cpp` will be generated in the
+For each `<file>` specified a <nobr>C++</nobr> file with the name `<filename>.gen.cpp` will be generated in the
 current working directory (where `<filename>` is the filename of `<file>` without extension).
 Additionally, a file `<ext-name>.lib.cpp` containing the entry point `<ext-name>_library_init`
 will also be generated on the current working directory.
@@ -618,7 +623,7 @@ python ../gdexport/gdexport.py --godot ../godot-cpp example gdexample.h
 Several extra options can be specified, see [detailed script usage](#detailed-script-usage) and
 [script options](#script-options) below. The most useful options are the following:
 
-  * `--output <dir>` &mdash; Specifies to output generated C++ files to `<dir>`. For example, this allows
+  * `--output <dir>` &mdash; Specifies to output generated <nobr>C++</nobr> files to `<dir>`. For example, this allows
     the above example to be written as
     ```sh
     python gdexport/gdexport.py --output src/gen  example gdexample.h
@@ -640,21 +645,21 @@ gdexport.py [-h] [--godot DIR | --no-godot] [--clang EXE] [--isystem DIR] [--inc
 
 `name`
 
-  - Name of the GDExtension. Used for generating the entry_symbol name '<name>_library_init'
+  - Name of the GDExtension. Used for generating the `entry_symbol` name `<name>_library_init`
 
 `file`
 
-  - List of C++ header files to process to export Godot classes from
+  - List of <nobr>C++</nobr> header files to process to export Godot classes from
 
 ##### Script Options:
 
 `--godot, -g DIR`
   
-  - Path to the root of the checkout of the godot-cpp repo (automatically calculates godot include)
+  - Path to the root of the checkout of the `godot-cpp` repo (automatically calculates godot include)
 
 `--no-godot`
   
-  - Don't automatically calculate include folders from godot-cpp repo directory
+  - Don't automatically calculate include folders from `godot-cpp` repo directory
 
 `--clang, -c EXE`
   
@@ -662,11 +667,11 @@ gdexport.py [-h] [--godot DIR | --no-godot] [--clang EXE] [--isystem DIR] [--inc
 
 `--isystem, -s DIR`
   
-  - List of paths to treat as system include directories; i.e., -isystem paths to clang
+  - List of paths to treat as system include directories; i.e., `-isystem` paths to clang
 
 `--include, -I DIR`
   
-  - List of paths to treat as system include directories; i.e., -I paths to clang
+  - List of paths to treat as system include directories; i.e., `-I` paths to clang
 
 `--output, -o DIR`
   
@@ -698,12 +703,12 @@ import gdexport
 
 This module exposes the following methods:
 
-  * [`generate_all`](#generate_all) &mdash; This can be used to generate all necessary C++ source files
+  * [`generate_all`](#generate_all) &mdash; This can be used to generate all necessary <nobr>C++</nobr> source files
     necessary, it is essentially the same as calling the script from the command line
-  * [`export_header`](#export_header) &mdash; Creates the source file for a single C++ header file
+  * [`export_header`](#export_header) &mdash; Creates the source file for a single <nobr>C++</nobr> header file
   * [`entry_point`](#entry_point) &mdash; Creates the entry point function, given a list of
-    previously generated C++ files.
-  * [`entry_point_name`](#entry_point_name) &mdash; Gets the name of the C++ entry point function which will be generated
+    previously generated <nobr>C++</nobr> files.
+  * [`entry_point_name`](#entry_point_name) &mdash; Gets the name of the <nobr>C++</nobr> entry point function which will be generated
   * [`list_doc_files`](#list_doc_files) &mdash; Gets a list of the filenames of the XML documentation
     files which will be exported
     
@@ -735,7 +740,7 @@ only sequential, so calling the individual methods in parallel may be faster. Ad
 processes every file; therefore, as part of a build system calling the individual methods may be
 better.
 
-> *Note*
+> [!NOTE]
 >
 > In the following documentation most of the arguments are specified as `str` type. In actually fact,
 > most of these arguments can take any type which can be converted to string with the `str` function
@@ -757,35 +762,35 @@ gdexport.generate_all(name           : str,
                       args           : list[str] = []) -> tuple[list[str],list[str]|None,str]:
 ```
 
-Generates all C++ source files, and optionally XML documentation, which export the C++ classes,
-methods, enums, signals, etc., marked with `godot::` attributes from the specified C++ header files
+Generates all <nobr>C++</nobr> source files, and optionally XML documentation, which export the <nobr>C++</nobr> classes,
+methods, enums, signals, etc., marked with `godot::` attributes from the specified <nobr>C++</nobr> header files
 to be accessible via a Godot GDExtension. Also generates the *entry point* to the GDExtension.
 
 The arguments of this function correspond to similar arguments from the script:
 
   * `name` (string) &mdash; Name of the GDExtension. Used for generating the "entry_symbol" function name 
-  (`<name>_library_init`) and the name of the generated C++ file for the entry point (`<name>.lib.cpp`). Must be a valid C++ identifier
-  * `files` (list of strings) &mdash; List of C++ header files to process to export Godot classes from
-  * `godot` (string) &mdash; Path to the root of the checkout of the `godot-cpp` repo. Default is 'godot-cpp' folder in the current working directory. If `None` does not automatically deduce godot-cpp header paths.
+  (`<name>_library_init`) and the name of the generated <nobr>C++</nobr> file for the entry point (`<name>.lib.cpp`). Must be a valid <nobr>C++</nobr> identifier
+  * `files` (list of strings) &mdash; List of <nobr>C++</nobr> header files to process to export Godot classes from
+  * `godot` (string) &mdash; Path to the root of the checkout of the `godot-cpp` repo. Default is `godot-cpp` folder in the current working directory. If `None` does not automatically deduce godot-cpp header paths.
   * `clang` (string) &mdash; Path to the clang executable (default = `clang` in PATH)
   * `sysincludes` (list of strings) &mdash; List of paths to treat as system include directories; i.e., `-isystem` paths to Clang
   * `includes` (list of strings) &mdash; List of paths to treat as normal include directories; i.e., `-I` paths to Clang
   * `destination` (string) &mdash; Output directory for generated files. (default = current working directory)
-  * `documentation` (string) &mdash; Specify whether to also extract Doxygen style comments from the C++ source and generate the Godot XML documentation for the extension. Specify `None` to not generate documentation, `""` (empty string) to generate in default location (`doc_classes` in current working), or path to directory to generate in otherwise
-  * `create_folders` (boolean) &mdash; Specify whether to create output folders (`destination` and `documentation) if they do not exist
+  * `documentation` (string) &mdash; Specify whether to also extract Doxygen style comments from the <nobr>C++</nobr> source and generate the Godot XML documentation for the extension. Specify `None` to not generate documentation, `""` (empty string) to generate in default location (`doc_classes` in current working), or path to directory to generate in otherwise
+  * `create_folders` (boolean) &mdash; Specify whether to create output folders (`destination` and `documentation`) if they do not exist
   * `quiet` (boolean) &mdash; Specifies whether to suppress status messages
   * `args` (list of strings) &mdash; List of extra command line arguments to pass to clang
 
 This function returns a three-tuple containing the following on success:
-  * List of strings containing the file paths/names of the generated C++ source file
+  * List of strings containing the file paths/names of the generated <nobr>C++</nobr> source files
   * If `documentation` is not `None` then a list of strings containing the file
-    paths/names of the generated XML documentation files; otherwise None
-  * The name of the C++ function generated as the extension's entry point;
+    paths/names of the generated XML documentation files; otherwise `None`
+  * The name of the <nobr>C++</nobr> function generated as the extension's entry point;
     i.e., the value returned by [`entry_point_name`](#entry_point_name).
 
 On failure, several specific exceptions can be raised:
 
-  * `ValueError` &mdash; If name is not a valid C++ identifier (valid identifier contains only [a-zA-Z0-9_] and cannot start with a number)
+  * `ValueError` &mdash; If name is not a valid <nobr>C++</nobr> identifier (valid identifier contains only `[a-zA-Z0-9_]` and cannot start with a number)
   * `ValueError` &mdash; If no files are specified, or a specified file does not exist
   * `FileExistsError` &mdash; If `destination` or `documentation` folder does not exist, and `create_folders` is `False`
   * `NotADirectoryError` &mdash; If `destination` or `documentation` folder is a file
@@ -807,23 +812,23 @@ def export_header(file           : str,
                   args           : list[str] = []) -> tuple[str,list[str]|None]:
 ```
 
-Generates a C++ source file, and optionally XML documentation, which export the C++ classes,
-methods, enums, signals, etc., marked with `godot::` attributes from the specified C++ header file.
+Generates a <nobr>C++</nobr> source file, and optionally XML documentation, which export the <nobr>C++</nobr> classes,
+methods, enums, signals, etc., marked with `godot::` attributes from the specified <nobr>C++</nobr> header file.
 This function does not generates the *entry point* to the GDExtension.
 
 Most of the arguments are the same as [`generate_all`](#generate_all) function, with the following
 changes:
 
-  * `file` (string) &mdash; Specifies a single C++ header file to export Godot classes from
-  * ` output` (string) *or* `destination` &mdash; If `output` is specified this is the name of the
-    generated C++ source file and `destination` is ignored. If not specified (None), `destination` is
-    used to specify the folder in which to create the generated C++ source file (with an automatically
+  * `file` (string) &mdash; Specifies a single <nobr>C++</nobr> header file to export Godot classes from
+  * `output` (string) *or* `destination` &mdash; If `output` is specified this is the name of the
+    generated <nobr>C++</nobr> source file and `destination` is ignored. If not specified (`None`), `destination` is
+    used to specify the folder in which to create the generated <nobr>C++</nobr> source file (with an automatically
     generated name); i.e., same behaviour as [`generate_all`](#generate_all)
 
 This function returns a two-tuple containing the following on success:
-  * String containing the file path/name of the generated C++ source file
+  * String containing the file path/name of the generated <nobr>C++</nobr> source file
   * If `documentation` is not `None` then a list of strings containing the file
-    paths/names of the generated XML documentation files; otherwise None
+    paths/names of the generated XML documentation files; otherwise `None`
 
 On failure, several specific exceptions can be raised:
 
@@ -841,26 +846,26 @@ def entry_point(name           : str,
                 create_folders : bool = True) -> str:
 ```
 
-Generates a C++ source file containing the entry point of the GDExtension for registering all
-the exported classes etc. which will be exported from the specified C++ header files.
+Generates a <nobr>C++</nobr> source file containing the entry point of the GDExtension for registering all
+the exported classes etc. which will be exported from the specified <nobr>C++</nobr> header files.
 
 This function takes *some* of the same arguments as the [`generate_all`](#generate_all) function:
 
   * `name` (string) &mdash; Name of the GDExtension. Used for generating the "entry_symbol" function name
-    (`<name>_library_init`) and the name of the generated C++ file for the entry point (`<name>.lib.cpp`). Must be a valid C++ identifier
-  * `files` (list of strings) &mdash; List of C++ header files for which files have been (or will be) generated
-  * ` output` (string) *or* `destination` &mdash; If `output` is specified this is the name of the
-    generated C++ source file and `destination` is ignored. If not specified (None), `destination` is
-    used to specify the folder to create the generated C++ header file (with an automatically
+    (`<name>_library_init`) and the name of the generated <nobr>C++</nobr> file for the entry point (`<name>.lib.cpp`). Must be a valid <nobr>C++</nobr> identifier
+  * `files` (list of strings) &mdash; List of <nobr>C++</nobr> header files for which files have been (or will be) generated
+  * `output` (string) *or* `destination` &mdash; If `output` is specified this is the name of the
+    generated <nobr>C++</nobr> source file and `destination` is ignored. If not specified (`None`), `destination` is
+    used to specify the folder to create the generated <nobr>C++</nobr> header file (with an automatically
     generated name); i.e., same behaviour as [`generate_all`](#generate_all)
   * `create_folders` (boolean) &mdash; Specify whether to create  the `destination` folder if it does not exist
 
-On success returns the name of the C++ function generated as the extension's
+On success returns the name of the <nobr>C++</nobr> function generated as the extension's
 entry point; i.e., the value returned by [`entry_point_name`](#entry_point_name).
 
 On failure, several specific exceptions can be raised:
 
-  * `ValueError` &mdash; If name is not a valid C++ identifier (valid identifier contains only [a-zA-Z0-9_] and cannot start with a number)
+  * `ValueError` &mdash; If name is not a valid <nobr>C++</nobr> identifier (valid identifier contains only `[a-zA-Z0-9_]` and cannot start with a number)
   * `ValueError` &mdash; If no files are specified
   * `FileExistsError` &mdash;  If `output` is not set, `destination` folder does not exist, and `create_folders` is `False`
   * `NotADirectoryError` &mdash; If `output` is not set, and `destination` folder is a file
@@ -873,13 +878,13 @@ On failure, several specific exceptions can be raised:
 gdexport.entry_point_name(name : str) -> str:
 ```
 
-This function takes the name of the GDExtension and returns the name of the C++ function which will
-be generated as the extension's entry point. The argument *MUST* be a valid C++ identifier; if not,
+This function takes the name of the GDExtension and returns the name of the <nobr>C++</nobr> function which will
+be generated as the extension's entry point. The argument *MUST* be a valid <nobr>C++</nobr> identifier; if not,
 a `ValueError` will be raised.
 
 ##### `list_doc_files`
 
-> **Warning**
+>[!TIP]
 >
 > This method is relatively expensive for a simple query as it has to uses clang to parse the
 > input header files to deduce the classes which will have documentation exported. Therefore,
@@ -917,13 +922,13 @@ On failure, several specific exceptions can be raised:
 As an SCons SConstruct file is simply a python script it is possible to automatically
 configure the generation of the files, and include them directly within the build.
 
-The `gdexport` module contains a `scons` submodule:
+The `gdexport` module contains an `scons` submodule:
 
 ```python
 import gdexport.scons
 ```
 
-This mdule contains one function which can setup the build:
+This module contains one function which can setup the build:
 
 ```python
 gdexport.scons.configure_generate(env            : SCons.Environment
@@ -948,7 +953,7 @@ The arguments are similar to the [`generate_all`](#generate_all) function, with 
   * `documentation` &mdash; As well as generating the XML documentation in the specified path (if this
     argument is not `None`), the method will also automatically embed the documentation in the library; see
     [Godot documentation](https://docs.godotengine.org/en/stable/tutorials/scripting/cpp/gdextension_docs_system.html). Essentially, it will call the `env.GodotCPPDocData` builder passing the list of XML
-    documentation files, and will add the C++ source that method generates to the returned source list
+    documentation files, and will add the <nobr>C++</nobr> source that method generates to the returned source list
 
 This function returns a list of source files which will be generated by the builders (to add to
 the sources for the extension).

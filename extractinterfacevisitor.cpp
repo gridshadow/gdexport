@@ -148,25 +148,13 @@ bool ExtractInterfaceVisitor::VisitCXXMethodDecl(CXXMethodDecl* declaration)
                     name = nameInfo.getAsIdentifierInfo()->getName();
                     break;
                 case DeclarationName::CXXOperatorName:
-                    if(annotation == "godot::method")
-                    {
-                        // TODO
-                        auto op = nameInfo.getCXXOverloadedOperator();
-                        if(op == OverloadedOperatorKind::OO_Plus)
-                        {
-                            name = "operator +";
-                        }
-                    }
-                    else
-                    {
-                        GenerateError(*context, attr->getLocation(), DiagnosticsEngine::Error,
-                            "%0 is attached to a C++ operator overload, which is invalid for this annotation", annotation);
-                        return false;
-                    }
-                    break;
+                    // TODO
+                    GenerateError(*context, attr->getLocation(), DiagnosticsEngine::Error,
+                        "%0 is attached to a C++ operator overload, which is invalid for this annotation", annotation);
+                    return false;
                 default:
                     GenerateError(*context, attr->getLocation(), DiagnosticsEngine::Error,
-                        "%0 is not attached to a class, function, or C++ operator overload", annotation);
+                        "%0 is not attached to a function", annotation);
                     return false;
             }
             // std::string name(declaration->getName().data());
@@ -325,12 +313,12 @@ void ExtractInterfaceVisitor::ProcessSignal(const std::string& name, CXXMethodDe
         const std::vector<FunctionArgument>& arguments)
 {
     auto& signal = signals.emplace_back(name, declaration->getLocation());
-    IndentFunc() << "ADD_SIGNAL(MethodInfo(\"" << name << '\"';
+    IndentFunc() << "ADD_SIGNAL(::godot::MethodInfo(\"" << name << '\"';
     signal.ArgNames.reserve(arguments.size());
 
     for(const auto& param : arguments)
     {
-        outs() << ", PropertyInfo(" << param.Type.VariantType << ", \"" << param.Name << "\")";
+        outs() << ", ::godot::PropertyInfo(" << param.Type.VariantType << ", \"" << param.Name << "\")";
         if(!signal.Signature.empty())
         {
             signal.Signature += ", ";
@@ -406,11 +394,11 @@ void ExtractInterfaceVisitor::ProcessMethod(const std::string& name, CXXMethodDe
     if(isStatic)
     {
         outs() << "::godot::ClassDB::bind_static_method(\"" << currentClass
-            << "\", D_METHOD(\"" << name << '\"';
+            << "\", ::godot::D_METHOD(\"" << name << '\"';
     }
     else
     {
-        outs() << "::godot::ClassDB::bind_method(D_METHOD(\""
+        outs() << "::godot::ClassDB::bind_method(::godot::D_METHOD(\""
             << name << '\"';
     }
     for(const auto& param : arguments)
