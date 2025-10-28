@@ -458,9 +458,7 @@ differences to Doxygen and Godot comment formats:
       Starts paragraph to display copyright information
     - [`deprecated`](https://www.doxygen.nl/manual/commands.html#cmddeprecated) &mdash;
       Marks as deprecated and adds optional paragraph describing why.
-      > [!ATTENTION]
-      > 
-      > This tag is slightly different to the GDScript version
+      **Warning: This tag is slightly different to the GDScript version**
     - [`e`](https://www.doxygen.nl/manual/commands.html#cmde)
       / [`em`](https://www.doxygen.nl/manual/commands.html#cmdem) &mdash;
       Displays next word in italic; i.e., emphasise the text
@@ -508,15 +506,11 @@ differences to Doxygen and Godot comment formats:
       `ref signal:Class.name`, `ref theme_item:Class.name` &mdash; Link to the
       specified annotation, constant, enum, member, method, constructor, signal,
       or theme_item; equivalent to `[annotation Class.name]` etc.
-      > [!ATTENTION]
-      > 
-      > There must be *NO* whitespace in the command (except the required space after `ref`)
+      **Warning: There must be *NO* whitespace in the command (except the required space after `ref`)**
     - `ref operator:Class.op` &mdash; Link to the operator, where `op` is the 
       operator *without* the `operator` prefix; e.g, `\ref operator:Color.+=`.
       Equivalent to `[operator Class.operator op]`
-      > [!ATTENTION]
-      > 
-      > There must be *NO* whitespace in the command (except the required space after `ref`)
+      **Warning: There must be *NO* whitespace in the command (except the required space after `ref`)**
   * The following extra Doxygen-style commands are supported
     (using `@` or `\`) similar to the corresponding GDScript tags:
     - `tutorial url [title]` &mdash; Adds the link to a tutorial, with optional title
