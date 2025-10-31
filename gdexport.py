@@ -402,7 +402,7 @@ def _entry_point(name : str, files : list[str], output : str) -> str:
     :return: The name of the C++ function generated as the extension's entry point;
              i.e., the value returned by `entry_point_name`
     """
-    ids = [re.sub("[^a-zA-Z0-9_]", pathlib.Path(str(x)).stem, '_') for x in files]
+    ids = [re.sub("[^a-zA-Z0-9_]", '_', pathlib.Path(str(x)).stem) for x in files]
     with open(str(output), 'w', encoding='utf-8') as f:
         f.write('#include <gdextension_interface.h>\n'
                 '#include <godot_cpp/core/defs.hpp>\n'
@@ -536,9 +536,6 @@ def list_doc_files(files          : list[str],
     :param list[str] args:         List of extra command line arguments to pass to clang
 
     :raises ValueError:         If no files are specified, or a specified file does not exist
-    :raises subprocess.CalledProcessError: if an error occurs when calling `clang` (compiler error etc.),
-                                or if the return from `clang --version` is invalid
-                                (unable to deduce version number)
 
     :return: List of string denoting the path to the XML documentation files which will be created
              by `generate_all` or `export_header`.
@@ -574,8 +571,8 @@ def list_doc_files(files          : list[str],
 
         for file in files:
             arguments[-1] = str(file)
-            output = subprocess.check_output(arguments, encoding='utf-8')
-            result += [str(dest/(x.strip()+".xml")) for x in output.splitlines() if x.strip() != '']
+            output = subprocess.run(arguments, encoding='utf-8', capture_output=True)
+            result += [str(dest/(x.strip()+".xml")) for x in output.stdout.splitlines() if x.strip() != '']
     return result
 
 if __name__ == "__main__":

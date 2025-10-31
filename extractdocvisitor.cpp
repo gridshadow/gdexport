@@ -911,9 +911,9 @@ void ParsedDocumentation::ParseVerbatim(const StringRef& command, comments::Verb
 // ExtractDocVisitor
 // =============================================================================
 
-void ExtractDocVisitor::ProcessStartClass(const StringRef& name, CXXRecordDecl* declaration)
+void ExtractDocVisitor::ProcessStartClass(const StringRef& name, CXXRecordDecl* declaration, bool tool)
 {
-    ExtractInterfaceVisitor::ProcessStartClass(name, declaration);
+    ExtractInterfaceVisitor::ProcessStartClass(name, declaration, tool);
     auto path = (root / (name.str() + ".xml")).generic_string();
     std::error_code err;
     file.reset(new llvm::raw_fd_stream(path, err));
@@ -976,7 +976,7 @@ void ExtractDocVisitor::ProcessEndClass(const StringRef& name, CXXRecordDecl* de
         *file << "    <methods>\n";
         for(const auto& method : methods)
         {
-            // TODO: default, is_bitfield, & returns_error
+            // TODO: default, & returns_error
             *file << "        <method name=\"" << method.first << "\"";
             if(!method.second.Qualifiers.empty())
             {
@@ -993,7 +993,8 @@ void ExtractDocVisitor::ProcessEndClass(const StringRef& name, CXXRecordDecl* de
                 *file << "            <return type=\"" << method.second.ReturnType->TypeName;
                 if(!method.second.ReturnType->EnumName.empty())
                 {
-                    *file << "\" enum=\"" << method.second.ReturnType->EnumName;
+                    *file << "\" enum=\"" << method.second.ReturnType->EnumName
+                        << "\" is_bitfield=\"" << method.second.ReturnType->IsBitfield;;
                 }
                 *file << "\"/>\n";
             }
@@ -1004,7 +1005,7 @@ void ExtractDocVisitor::ProcessEndClass(const StringRef& name, CXXRecordDecl* de
                       << "\" type=\"" << param.Type.TypeName;
                 if(!param.Type.EnumName.empty())
                 {
-                    *file << "\" enum=\"" << param.Type.EnumName;
+                    *file << "\" enum=\"" << param.Type.EnumName << "\" is_bitfield=\"" << param.Type.IsBitfield;
                 }
                 *file << "\"/>\n";
                 ++index;
@@ -1016,14 +1017,15 @@ void ExtractDocVisitor::ProcessEndClass(const StringRef& name, CXXRecordDecl* de
         *file << "    </methods>\n    <members>\n";
         for(const auto& property : properties)
         {
-            // TODO: default & is_bitfield
+            // TODO: default
             *file << "        <member name=\"" << property.first << "\" type=\""
                   << property.second.Property.Type.TypeName << "\" setter=\""
                   << property.second.Property.Setter << "\" getter=\""
                   << property.second.Property.Getter << "\"";
             if(!property.second.Property.Type.EnumName.empty())
             {
-                *file << " enum=\"" << property.second.Property.Type.EnumName << "\"";
+                *file << " enum=\"" << property.second.Property.Type.EnumName << "\" is_bitfield=\""
+                    << property.second.Property.Type.IsBitfield << "\"";
             }
             if(property.second.Documentation)
             {

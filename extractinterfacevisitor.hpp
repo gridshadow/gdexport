@@ -88,9 +88,9 @@ protected:
             : Getter()
             , Setter()
             , Type()
-            , Hint("::godot::PropertyHint::PROPERTY_HINT_NONE")
+            , Hint()
             , HintString()
-            , Usage("::godot::PropertyUsageFlags::PROPERTY_USAGE_DEFAULT")
+            , Usage("::godot::PROPERTY_USAGE_DEFAULT")
         {
         }
 
@@ -195,7 +195,7 @@ protected:
     };
 
     /**
-     * Method called when a class marked with `[[godot::class]]` is encountered in the AST.
+     * Method called when a class marked with `[[godot::class]]` or `[[godot::tool]]` is encountered in the AST.
      *
      * All other Process* methods called will for methods, members, signals, etc. for this class
      *
@@ -206,8 +206,9 @@ protected:
      *
      * @param name The name of the class
      * @param declaration The declaration for the class
+     * @param tool Specifies if this class was marked as `[[godot::tool]]`
      */
-    virtual void ProcessStartClass(const StringRef& name, CXXRecordDecl* declaration);
+    virtual void ProcessStartClass(const StringRef& name, CXXRecordDecl* declaration, bool tool);
 
     /**
      * Method called when reaching the end of a class definition of a class marked [[godot::class]].
@@ -383,7 +384,7 @@ private:
     };
 
     ASTContext* context;
-    std::vector<std::string> classes;
+    std::vector<std::pair<std::string, bool>> classes;
     std::unordered_map<std::string, Property> properties;
     std::vector<SignalData> signals;
     std::vector<StringRef> currentNamespace;

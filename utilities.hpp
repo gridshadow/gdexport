@@ -201,6 +201,8 @@ struct GodotType
         : VariantType("::godot::Variant::NIL")
         , TypeName("nil")
         , EnumName()
+        , EnumValues()
+        , IsBitfield(false)
     {
     }
 
@@ -262,6 +264,16 @@ struct GodotType
      * If type is an enum, specifies the enum name (TypeName will be `int`)
      */
     std::string EnumName;
+
+    /**
+     * If type is an enum, specifies the list of valid enum values (TypeName will be `int`)
+     */
+    std::unordered_map<std::string, uint64_t> EnumValues;
+
+    /**
+     * If an enum specifies this is a bitfield (EnumName non-empty)
+     */
+    bool IsBitfield;
 };
 
 /**

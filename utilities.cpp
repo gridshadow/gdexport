@@ -44,7 +44,7 @@ std::string ParseString(Expr**& current, Expr** end, const std::string& defaultV
     }
     found = str;
     return (str)
-        ? std::string{ str->getString().data() }
+        ? str->getString().str()
         : defaultValue;
 }
 
@@ -167,6 +167,11 @@ GodotType& GodotType::Parse(const QualType& type, const std::string& variantHint
             VariantType = "::godot::Variant::INT";
             TypeName = "int";
             EnumName = std::string{enumType->getName()};
+            std::transform(enumType->enumerator_begin(), enumType->enumerator_end(),
+                std::inserter(EnumValues, EnumValues.end()), [](const EnumConstantDecl* constant)
+                    {
+                        return std::make_pair(constant->getName().str(), constant->getValue().getLimitedValue());
+                    });
             return *this;
         }
     }
@@ -176,9 +181,36 @@ GodotType& GodotType::Parse(const QualType& type, const std::string& variantHint
     }
     auto cls = actualType->getAsCXXRecordDecl();
     TypeName = std::string{cls->getName()};
+    bool bitfield = (TypeName == "BitField");
+    if(IsInGodotNamespace(cls) && (bitfield || (TypeName == "Ref")))
+    {
+        auto* templates = dyn_cast<ClassTemplateSpecializationDecl>(cls);
+        if(templates)
+        {
+            auto& targs = templates->getTemplateArgs();
+            if(targs.size() > 0)
+            {
+                auto& arg = targs[0];
+                if(arg.getKind() == TemplateArgument::ArgKind::Type)
+                {
+                    Parse(arg.getAsType(),
+                        (bitfield && variantHint.empty()) ?  "::godot::Variant::INT" : variantHint,
+                        expandTemplate);
+                    if(bitfield)
+                    {
+                        IsBitfield = true;
+                    }
+                    return *this;
+                }
+            }
+        }
+        // TODO: Error?
+    }
+
     // Hack, typed array and dictionary (which we assume is in the Godot namespace) need to
     // pretend to be normal Godot array and dictionary
-    if((TypeName == "TypedArray") || (TypeName == "TypedDictionary"))
+
+    if(IsInGodotNamespace(cls) && ((TypeName == "TypedArray") || (TypeName == "TypedDictionary")))
     {
         TypeName = TypeName.substr(5);
     }

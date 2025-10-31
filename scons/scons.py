@@ -101,10 +101,6 @@ def configure_generate(env,
                                               includes, documentation, args)
             return target,source
         doc_emitter = doc_emitter_func
-        # if documentation[-1] != '/': # TODO: Windows path?
-        #     documentation += '/'
-        #     if :
-        #         env['gdexport_doc_folder'] = documentation
 
     def gdexport_entry_point(env,target,source):
         gdexport.entry_point(name, source, target[0])
@@ -120,22 +116,22 @@ def configure_generate(env,
                                    suffix='.gen.cpp', src_suffix='.hpp', emitter=doc_emitter)
     })
 
-    if not destination:
-        destination = '/'
-    elif destination[-1] != '/': # TODO: Windows path?
-        destination += '/'
+    if destination:
+        dest = pathlib.Path(str(destination))
+    else:
+        dest = pathlib.Path()
 
     if documentation and (env["target"] in ["editor", "template_debug"]):
         sources = []
         docs = []
         for x in files:
             path = pathlib.Path(str(x))
-            headers = env.GDExportHeader(destination+path.stem, source=x)
-            sources += [headers[0] for x in files]
+            headers = env.GDExportHeader(dest/path.stem, source=x)
+            sources.append(headers[0])
             docs += headers[1:]
         if docs:
-            sources.append(env.GodotCPPDocData(destination+name+".doc.cpp", source=docs))
+            sources += env.GodotCPPDocData(dest/(name+".doc.cpp"), source=docs)
     else:
-        sources = [env.GDExportHeader(destination+pathlib.Path(str(x)).stem, source=x) for x in files]
-    sources.append(env.GDExportEntryPoint(destination+name+'.lib.cpp', source=files))
+        sources = [env.GDExportHeader(dest/pathlib.Path(str(x)).stem, source=x) for x in files]
+    sources += env.GDExportEntryPoint(dest/(name+'.lib.cpp'), source=files)
     return sources

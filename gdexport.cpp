@@ -139,6 +139,7 @@ public:
     {
         if(extractClassNames)
         {
+            compiler.getPreprocessor().SetSuppressIncludeNotFoundError(true);
             return std::make_unique<ExtractClassNamesConsumer>(&compiler.getASTContext());
         }
         std::unique_ptr<llvm::raw_pwrite_stream> outFile;

@@ -241,6 +241,11 @@ DefineFunctionAttrInfo(group, 1, 1, "");
 DefineFunctionAttrInfo(subgroup, 1, 1, "");
 
 /**
+ * Defines the godot::tool attribute for defining a Godot class for use as a "tool"
+ */
+DefineTypeAttrInfo(tool, CXXRecordDecl, false);
+
+/**
  * Defines the godot::class attribute for defining a Godot class
  */
 DefineTypeAttrInfo(class, CXXRecordDecl, false);

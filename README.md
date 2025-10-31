@@ -64,7 +64,7 @@ and the underlying library), and the execution is fairly complicated. Therefore,
     and bitfields
   * Add support for marking enums outside of class as an enum/constant/bitfield
   * Add better support for property/argument type hinting, notably for methods/signals, and
-    automatically deducing type hints in some cases (such as enums values)
+    automatically deducing type hints in some cases)
   * Add support for virtual (can be overridden by GDScript) and override (override method in GDScript).
     Maybe can be deduced by the `virtual` and `overload` keywords on <nobr>C++</nobr> functions; however, virtual
     methods are generally defined by `GDVIRTUAL*` macros, which means an attribute cannot be attached
@@ -168,13 +168,20 @@ exporting.
 
 #### Class
 
-An attribute is attached to a `class` or `struct` to export a class
+One of the two attributes is attached to a `class` or `struct` to export the class
 
 > **`godot::class`** &mdash; Specifies that the annotated class `ClassName` is
-> exported as a class in the GDExtension.
+> exported as a *runtime* class in the GDExtension (no code running in the editor)
 >
 > ```cpp
 > class [[godot::class]] ClassName
+> ```
+
+> **`godot::tool`** &mdash; Specifies that the annotated class `ClassName` is
+> exported as a *tool* class in the GDExtension (code runs in the editor)
+>
+> ```cpp
+> class [[godot::tool]] ClassName
 > ```
 
 #### Enum, Bitfield, and Constants
@@ -905,11 +912,13 @@ directory) as it should behave as if the documentation export is requested.
 Returns a list of string denoting the path to the XML documentation files which will be created
 by [`generate_all`](#generate_all) or [`export_header`](#export_header) on success.
 
-On failure, several specific exceptions can be raised:
+A `ValueError` is raised if no files are specified, or a specified file does not exist. 
 
-  * `ValueError` &mdash; If no files are specified, or a specified file does not exist
-  * `subprocess.CalledProcessError` &mdash; if an error occurs when calling `clang` (compiler error etc.),
-    or if the return from `clang --version` is invalid (unable to deduce version number)
+> [!CAUTION]
+>
+> This method ignores compile errors reported by clang, so we need to be able to build this list
+> if possible regardless of compilation errors. This MAY result in inaccuracies as a result.
+
 
 #### SCons
 

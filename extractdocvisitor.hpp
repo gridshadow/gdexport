@@ -358,7 +358,7 @@ public:
     }
 
 protected:
-    virtual void ProcessStartClass(const StringRef& name, CXXRecordDecl* declaration) override;
+    virtual void ProcessStartClass(const StringRef& name, CXXRecordDecl* declaration, bool tool) override;
     virtual void ProcessEndClass(const StringRef& name, CXXRecordDecl* declaration) override;
     virtual void ProcessConstant(ConstantType type, const StringRef& name, EnumConstantDecl* declaration) override;
     virtual void ProcessPropertyFunc(const std::string& propertyName, CXXMethodDecl* declaration,

@@ -8,10 +8,25 @@
 #include "clang/AST/ASTContext.h"
 #include "clang/Basic/SourceManager.h"
 
-#include <godot_cpp/variant/variant.hpp>
-#include <godot_cpp/classes/global_constants.hpp>
+// #include <godot_cpp/variant/variant.hpp>
+// #include <godot_cpp/classes/global_constants.hpp>
 
 #include <sstream>
+
+template<typename It>
+std::string Join(It begin, It end)
+{
+    std::ostringstream joined;
+    if(begin != end)
+    {
+        joined << begin->first << ':' << begin->second;
+        for(++begin; begin != end; ++begin)
+        {
+            joined << ',' << begin->first << ':' << begin->second;
+        }
+    }
+    return joined.str();
+}
 
 // TODO: Check if method/properties/signals are inside an exported class
 using namespace clang;
@@ -37,10 +52,10 @@ ExtractInterfaceVisitor::~ExtractInterfaceVisitor()
     if(!classes.empty())
     {
         outs() << "// Export: initialize_" << funcName << " ====================\n"
-            "void initialize_" << funcName << "()\n{";
+            "void initialize_" << funcName << "()\n{\n";
         for(const auto& cls : classes)
         {
-            outs() << "    GDREGISTER_RUNTIME_CLASS(" << cls << ");\n";
+            outs() << "    GDREGISTER" << ((cls.second) ? "" : "_RUNTIME") << "_CLASS(" << cls.first << ");\n";
         }
         outs() << "}\n";
     }
@@ -70,14 +85,15 @@ bool ExtractInterfaceVisitor::TraverseCXXRecordDecl(CXXRecordDecl* declaration)
         bool popClass = false;
         for(const auto& attr : declaration->specific_attrs<AnnotateAttr>())
         {
-            if(attr->getAnnotation() == "godot::class")
+            bool tool = (attr->getAnnotation() == "godot::tool");
+            if(tool || (attr->getAnnotation() == "godot::class"))
             {
                 if(currentClass.empty())
                 {
                     currentClass = declaration->getName();
                     inClass = true;
                     popClass = true;
-                    ProcessStartClass(declaration->getName(), declaration);
+                    ProcessStartClass(declaration->getName(), declaration, tool);
                 }
                 break;
             }
@@ -157,7 +173,6 @@ bool ExtractInterfaceVisitor::VisitCXXMethodDecl(CXXMethodDecl* declaration)
                         "%0 is not attached to a function", annotation);
                     return false;
             }
-            // std::string name(declaration->getName().data());
             if((annotation == "godot::group") || (annotation == "godot::subgroup"))
             {
                 bool parsed = false;
@@ -208,8 +223,7 @@ bool ExtractInterfaceVisitor::VisitCXXMethodDecl(CXXMethodDecl* declaration)
                     property = &properties[propertyName];
                     property->Getter = name;
                     property->GetterLoc = declaration->getLocation();
-                    auto type = ParseEnum(*context, it, end, "", "property type", propertyName,
-                        godot::Variant::VARIANT_MAX - 1);
+                    auto type = ParseEnum(*context, it, end, "", "property type", propertyName);
                     property->Type.Parse(declaration->getReturnType(), type);
                     property->Usage = ParseBitfield(*context, it, end, "::godot::PROPERTY_USAGE_DEFAULT",
                         "property usage", propertyName);
@@ -240,8 +254,8 @@ bool ExtractInterfaceVisitor::VisitCXXMethodDecl(CXXMethodDecl* declaration)
                     property = &properties[propertyName];
                     property->Setter = name;
                     property->SetterLoc = declaration->getLocation();
-                    property->Hint = ParseEnum(*context, it, end, "::godot::PROPERTY_HINT_NONE",
-                        "property type", propertyName, godot::PROPERTY_HINT_MAX - 1);
+                    property->Hint = ParseEnum(*context, it, end, "",
+                        "property type", propertyName);//, godot::PROPERTY_HINT_MAX - 1);
                     property->HintString = ParseString(it, end, "", found);
 
                     if(!GetUnderlyingType(declaration->getReturnType())->isVoidType())
@@ -266,7 +280,7 @@ bool ExtractInterfaceVisitor::VisitCXXMethodDecl(CXXMethodDecl* declaration)
     return true;
 }
 
-void ExtractInterfaceVisitor::ProcessStartClass(const StringRef& className, CXXRecordDecl*)
+void ExtractInterfaceVisitor::ProcessStartClass(const StringRef& className, CXXRecordDecl*, bool tool)
 {
     llvm::outs() << className.str() << "\n";
     std::ostringstream fullyQualified;
@@ -274,12 +288,12 @@ void ExtractInterfaceVisitor::ProcessStartClass(const StringRef& className, CXXR
     {
         for(const auto& ns : currentNamespace)
         {
-            fullyQualified << "::" << ns.data();
+            fullyQualified << "::" << ns.str();
         }
         fullyQualified << "::";
     }
-    fullyQualified << className.data();
-    classes.push_back(fullyQualified.str());
+    fullyQualified << className.str();
+    classes.emplace_back(fullyQualified.str(), tool);
     for(; writtenNS < currentNamespace.size(); ++writtenNS)
     {
         Indent() << "namespace " << currentNamespace[writtenNS] << '\n';
@@ -440,12 +454,28 @@ void ExtractInterfaceVisitor::WriteProperties()
     if(!properties.empty())
     {
         outs() << '\n';
-        for(const auto& [name, property] : properties)
+        for(auto& [name, property] : properties)
         {
             if(property.Getter.empty())
             {
                 GenerateError(*context, property.SetterLoc,
                     "Property '%0' does not have a getter defined", name);
+            }
+            if(property.Hint.empty())
+            {
+                if(property.Type.EnumValues.empty())
+                {
+                    property.Hint = "::godot::PROPERTY_HINT_NONE";
+                }
+                else
+                {
+                    property.Hint = "::godot::PROPERTY_HINT_ENUM";
+                    property.HintString = Join(property.Type.EnumValues.begin(), property.Type.EnumValues.end());
+                }
+            }
+            if(property.Usage.empty())
+            {
+                property.Usage = "::godot::PropertyHint::";
             }
             ProcessProperty(name, property);
         }
