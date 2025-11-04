@@ -19,10 +19,10 @@ std::string Join(It begin, It end)
     std::ostringstream joined;
     if(begin != end)
     {
-        joined << begin->first << ':' << begin->second;
+        joined << begin->second << ':' << begin->first;
         for(++begin; begin != end; ++begin)
         {
-            joined << ',' << begin->first << ':' << begin->second;
+            joined << ',' << begin->second << ':' << begin->first;
         }
     }
     return joined.str();
@@ -79,9 +79,8 @@ bool ExtractInterfaceVisitor::TraverseNamespaceDecl(NamespaceDecl* declaration)
 
 bool ExtractInterfaceVisitor::TraverseCXXRecordDecl(CXXRecordDecl* declaration)
 {
-    if(context->getSourceManager().isInMainFile(declaration->getLocation()))
+    if(context->getSourceManager().isInMainFile(declaration->getLocation()) && !inClass)
     {
-        inClass = false;
         bool popClass = false;
         for(const auto& attr : declaration->specific_attrs<AnnotateAttr>())
         {
@@ -466,6 +465,11 @@ void ExtractInterfaceVisitor::WriteProperties()
                 if(property.Type.EnumValues.empty())
                 {
                     property.Hint = "::godot::PROPERTY_HINT_NONE";
+                }
+                else if(property.Type.IsBitfield)
+                {
+                    property.Hint = "::godot::PROPERTY_HINT_FLAGS";
+                    property.HintString = Join(property.Type.EnumValues.begin(), property.Type.EnumValues.end());
                 }
                 else
                 {

@@ -170,7 +170,7 @@ GodotType& GodotType::Parse(const QualType& type, const std::string& variantHint
             std::transform(enumType->enumerator_begin(), enumType->enumerator_end(),
                 std::inserter(EnumValues, EnumValues.end()), [](const EnumConstantDecl* constant)
                     {
-                        return std::make_pair(constant->getName().str(), constant->getValue().getLimitedValue());
+                        return std::make_pair(constant->getValue().getLimitedValue(),constant->getName().str());
                     });
             return *this;
         }

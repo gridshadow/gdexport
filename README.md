@@ -152,6 +152,12 @@ There are essentially two forms for the attributes:
   * **unprefixed**: `godot_name`. This appears to work with arguments, although
     the `-Wno-attributes` flag above will not suppress the warnings from GCC for these
 
+> [!CAUTION]
+>
+> Due to a bug/issue to Clang/LLVM *namespace prefixed* attributes do not work with
+> arguments. Therefore, any attributes requiring arguments must be of the form `godot_name`;
+> see [Issue #45791 in LLVM-Project](https://github.com/llvm/llvm-project/issues/45791).
+
 In the following documentation we only use the *namespace prefixed* form.
 
 Arguments must be compiler-time literals. The attributes used can take one or

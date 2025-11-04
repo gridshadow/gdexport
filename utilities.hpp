@@ -268,7 +268,7 @@ struct GodotType
     /**
      * If type is an enum, specifies the list of valid enum values (TypeName will be `int`)
      */
-    std::unordered_map<std::string, uint64_t> EnumValues;
+    std::map<uint64_t, std::string> EnumValues;
 
     /**
      * If an enum specifies this is a bitfield (EnumName non-empty)

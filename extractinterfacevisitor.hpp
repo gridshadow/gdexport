@@ -12,6 +12,106 @@
 
 using namespace clang;
 
+template<class Map, class It>
+class InsertionOrderedMapIterator
+{
+public:
+    typedef std::forward_iterator_tag iterator_category;
+    typedef typename Map::difference_type difference_type;
+    typedef typename Map::value_type value_type;
+    typedef typename Map::pointer pointer;
+    typedef typename Map::reference reference;
+
+    InsertionOrderedMapIterator(Map* map, It it) : entries(map), iterator(it) { }
+
+    reference operator*() const { return *entries->find(*iterator); }
+    pointer operator->() { return &(*entries->find(*iterator)); }
+
+    // Prefix increment
+    InsertionOrderedMapIterator& operator++() { iterator++; return *this; }
+
+    // Postfix increment
+    InsertionOrderedMapIterator operator++(int)
+    {
+        InsertionOrderedMapIterator tmp = *this;
+        ++(*this);
+        return tmp;
+    }
+
+    friend bool operator==(const InsertionOrderedMapIterator& lhs, const InsertionOrderedMapIterator& rhs)
+    {
+        return lhs.iterator == rhs.iterator;
+    };
+
+    friend bool operator!=(const InsertionOrderedMapIterator& lhs, const InsertionOrderedMapIterator& rhs)
+    {
+        return lhs.iterator != rhs.iterator;
+    };
+
+private:
+    Map* entries;
+    It iterator;
+};
+
+template<class K, class V, class Hash = std::hash<K>, class KeyEqual = std::equal_to<K>>
+class InsertionOrderedMap
+{
+public:
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::key_type key_type;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::mapped_type mapped_type;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::value_type value_type;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::size_type size_type;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::difference_type difference_type;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::hasher hasher;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::key_equal key_equal;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::allocator_type allocator_type;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::reference reference;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::const_reference const_reference;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::pointer pointer;
+    typedef typename std::unordered_map<K,V,Hash,KeyEqual>::const_pointer const_pointer;
+    typedef InsertionOrderedMapIterator<
+            std::unordered_map<K,V,Hash,KeyEqual>,
+            typename std::vector<K>::iterator
+        > iterator;
+    typedef InsertionOrderedMapIterator<
+            const std::unordered_map<K,V,Hash,KeyEqual>,
+            typename std::vector<K>::const_iterator
+        > const_iterator;
+
+    InsertionOrderedMap() : entries(), keys() { }
+
+    mapped_type& operator[](const K& key)
+    {
+        keys.push_back(std::string{key});
+        auto result = entries.try_emplace(keys.back());
+        if(!result.second)
+        {
+            keys.pop_back();
+        }
+        return result.first->second;
+    }
+
+    bool empty() const { return entries.empty(); }
+
+    void clear()
+    {
+        entries.clear();
+        keys.clear();
+    }
+
+    iterator begin() { return iterator(&entries, keys.begin()); }
+    const_iterator begin() const { return const_iterator(entries, keys.cbegin()); }
+    const_iterator cbegin() const { return const_iterator(entries, keys.cbegin()); }
+
+    iterator end() { return iterator(&entries, keys.end()); }
+    const_iterator end() const { return const_iterator(entries, keys.cend()); }
+    const_iterator cend() const { return const_iterator(entries, keys.cend()); }
+
+private:
+    std::unordered_map<K, V, Hash, KeyEqual> entries;
+    std::vector<K> keys;
+};
+
 /**
  * Visitor which handles godot attributes and generates code to export the classes/methods
  */
@@ -385,7 +485,7 @@ private:
 
     ASTContext* context;
     std::vector<std::pair<std::string, bool>> classes;
-    std::unordered_map<std::string, Property> properties;
+    InsertionOrderedMap<std::string, Property> properties;
     std::vector<SignalData> signals;
     std::vector<StringRef> currentNamespace;
     std::size_t writtenNS;
