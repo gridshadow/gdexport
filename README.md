@@ -16,6 +16,7 @@ Clang plugin for auto-generating the export interface for a Godot GDExtension fr
       * [Signals](#signals)
       * [Groups/Subgroups](#member-groupssubgroups)
     * [Documentation Comments](#documentation-comments-support)
+    * [Example](#example)
     * [Generating the Interface](#generating-the-interface)
       * [Command-line Python Script](#python-script)
       * [Using Python Package](#python-package)
@@ -148,7 +149,7 @@ env.Append(CCFLAGS=["-Wno-attributes=godot::"])
 There are essentially two forms for the attributes:
 
   * **namespace prefixed**: `godot::name`. While this is the preferred format it
-    appears to not always work with arguments (maybe a bug in clang)
+    appears to not always work with arguments
   * **unprefixed**: `godot_name`. This appears to work with arguments, although
     the `-Wno-attributes` flag above will not suppress the warnings from GCC for these
 
@@ -157,6 +158,18 @@ There are essentially two forms for the attributes:
 > Due to a bug/issue to Clang/LLVM *namespace prefixed* attributes do not work with
 > arguments. Therefore, any attributes requiring arguments must be of the form `godot_name`;
 > see [Issue #45791 in LLVM-Project](https://github.com/llvm/llvm-project/issues/45791).
+
+> [!TIP]
+>
+> As an alternative workaround to this issue, and to ensure that no extra warnings
+> are generated at extension compile time due to unknown attributes, we provide
+> a utility header `attr.hpp` which can be included in header files requiring
+> attributes and provides a macro `GDATTR` which can be used instead of the
+> above standard attribute formats:
+> ```cpp
+> GDATTR(name(args))
+> ```
+> where `name` is the name of the attribute and `(args)` specifies optional arguments.
 
 In the following documentation we only use the *namespace prefixed* form.
 
@@ -584,6 +597,70 @@ or `\verbatim`/`@verbatim` Doxygen blocks can be used instead:
     ...C# here...
     \endcode
     ```
+
+### Example
+
+Below is an example usage, using the `GDATTR` method of specifying the attributes, applied to the
+[GDExtension example in the Godot tutorials](https://docs.godotengine.org/en/stable/tutorials/scripting/cpp/gdextension_cpp_example.html).
+
+```cpp
+#pragma once
+
+#include <godot_cpp/classes/sprite2d.hpp>
+#include <gdexport/attr.hpp>
+
+namespace godot {
+
+/**
+ * The example GDExtension from
+ * https://docs.godotengine.org/en/stable/tutorials/scripting/cpp/gdextension_cpp_example.html
+ */
+class GDATTR(class) GDExample : public Sprite2D {
+    GDCLASS(GDExample, Sprite2D)
+
+private:
+    double time_passed;
+    double time_emit;
+    double amplitude;
+    double speed;
+
+protected:
+    static void _bind_methods();
+
+public:
+    GDExample();
+    ~GDExample();
+
+    void _process(double delta) override;
+
+    /**
+     * Specifies the amplitude of the movement
+     */
+    GDATTR(setter)
+    void set_amplitude(const double p_amplitude);
+    GDATTR(getter)
+    double get_amplitude() const;
+
+    /**
+     * Specifies the speed of the movement
+     */
+    GDATTR(setter(PROPERTY_HINT_RANGE, "0,20,0.01"))
+    void set_speed(const double p_speed);
+    GDATTR(getter)
+    double get_speed() const;
+
+    /**
+     * Signal peroidically fired when the position of the particle changes
+     * 
+     * @param node Reference to this object
+     * @param new_pos The new position of the particle
+     */
+    GDATTR(signal)
+    void position_changed(const Object& node, const Vector2& new_pos)
+};
+
+} // namespace godot
+```
 
 ### Generating the Interface
 

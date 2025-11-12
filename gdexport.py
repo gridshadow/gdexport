@@ -141,7 +141,8 @@ def _load_arguments(clang          : str,
              two arguments of the returned array will be the empty string and should be replaced with
              the output and input file paths, respectively, for the header file to process
     """
-    arguments = [str(clang), "-fsyntax-only", "-Xclang", "-std=c++17", "-fplugin="+str(plugin)]
+    arguments = [str(clang), "-fsyntax-only", "-Xclang", "-std=c++17",
+                 "-Xclang", "-DGDEXPORT_GENERATING", "-fplugin="+str(plugin)]
     for inc in sysincludes:
         arguments += ["-Xclang", "-isystem", "-Xclang", str(inc)]
     for inc in includes:
@@ -558,7 +559,8 @@ def list_doc_files(files          : list[str],
 
     result = []
     with _get_plugin_path() as library:
-        arguments = [str(clang), "-fsyntax-only", "-Xclang", "-std=c++17", "-fplugin="+str(library)]
+        arguments = [str(clang), "-fsyntax-only", "-Xclang", "-std=c++17",
+                     "-Xclang", "-DGDEXPORT_GENERATING", "-fplugin="+str(library)]
         for inc in sysincludes:
             arguments += ["-Xclang", "-isystem", "-Xclang", str(inc)]
         for inc in includes:

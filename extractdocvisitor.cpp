@@ -544,7 +544,7 @@ ParsedDocumentation::ParsedDocumentation(const StringRef& className, comments::F
 {
     if(doc)
     {
-        bool hasBriefTag;
+        bool hasBriefTag = false;
         auto end = doc->child_end();
         for(auto it = doc->child_begin(); it != end; ++it)
         {

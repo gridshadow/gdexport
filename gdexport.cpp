@@ -35,7 +35,8 @@ public:
         {
             for(const auto& attr : declaration->specific_attrs<AnnotateAttr>())
             {
-                if(attr->getAnnotation() == "godot::class")
+                if((attr->getAnnotation() == "godot::class")
+                    || (attr->getAnnotation() == "godot::tool"))
                 {
                     llvm::outs() << declaration->getName() << "\n";
                     break;
